@@ -101,7 +101,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
             [HVACMode.COOL, HVACMode.HEAT, HVACMode.OFF]
         ),
         vol.Optional(const.CONF_PRESET_SYNC_MODE, default=const.DEFAULT_PRESET_SYNC_MODE): vol.In(
-            ['sync', 'none']
+            ['sync', 'none','free']
         ),
         vol.Optional(const.CONF_AWAY_TEMP): vol.Coerce(float),
         vol.Optional(const.CONF_ECO_TEMP): vol.Coerce(float),
@@ -562,11 +562,11 @@ class SmartThermostat(ClimateEntity, RestoreEntity, ABC):
         return {
             PRESET_AWAY: self._away_temp,
             PRESET_ECO: self._eco_temp,
-            PRESET_BOOST: self._boost_temp,
-            PRESET_COMFORT: self._comfort_temp,
-            PRESET_HOME: self._home_temp,
             PRESET_SLEEP: self._sleep_temp,
             PRESET_ACTIVITY: self._activity_temp,
+            PRESET_HOME: self._home_temp,
+            PRESET_COMFORT: self._comfort_temp,
+            PRESET_BOOST: self._boost_temp,
         }
 
     @property
@@ -575,11 +575,11 @@ class SmartThermostat(ClimateEntity, RestoreEntity, ABC):
         return {
             self._away_temp: PRESET_AWAY,
             self._eco_temp: PRESET_ECO,
-            self._boost_temp: PRESET_BOOST,
-            self._comfort_temp: PRESET_COMFORT,
-            self._home_temp: PRESET_HOME,
             self._sleep_temp: PRESET_SLEEP,
             self._activity_temp: PRESET_ACTIVITY,
+            self._home_temp: PRESET_HOME,
+            self._comfort_temp: PRESET_COMFORT,
+            self._boost_temp: PRESET_BOOST,
         }
 
     @property
@@ -771,6 +771,8 @@ class SmartThermostat(ClimateEntity, RestoreEntity, ABC):
             self._force_off = True
         if temperature in self._preset_temp_modes and self._preset_sync_mode == 'sync':
             await self.async_set_preset_mode(self._preset_temp_modes[temperature])
+        elif self._preset_sync_mode == 'free':
+            self._target_temp = temperature
         else:
             await self.async_set_preset_mode(PRESET_NONE)
             self._target_temp = temperature
